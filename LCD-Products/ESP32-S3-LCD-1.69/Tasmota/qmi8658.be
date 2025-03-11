@@ -1,7 +1,7 @@
 #- This file provides a basic Tasmota driver in berry-lang for the QMI8658 6-axis IMU. -#
 
 class QMI8658
-  var wire # not null if device detected
+  var wire # not nil if device detected
   # I have no idea why Tasmota Berry won't allow assignment here.
   var addr
   var REG_WHO_AM_I
@@ -53,7 +53,7 @@ class QMI8658
       end
 
       # The Waveshare samples have examples of running a software reset, but they don't
-      # agree with the provided datasheet so just pave over the existing settings.
+      # agree with the provided datasheet. Just pave over the existing settings.
 
       # It might be tempting to also check REG_REVISION_ID, but the datasheet specifies
       # two different values for it (0x68, 0x79) and testing has shown at least a third (0x7c).

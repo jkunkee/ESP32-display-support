@@ -190,6 +190,8 @@ TODO: display IMU state
 
 TODO: tie IMU accelerometer to screen orientation
 
+TODO: figure out is at I2C 0x7E
+
 ```berry
 load("qmi8658")
 
