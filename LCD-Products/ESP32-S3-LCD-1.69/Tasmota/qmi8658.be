@@ -1,4 +1,10 @@
-#- This file provides a basic Tasmota driver in berry-lang for the QMI8658 6-axis IMU. -#
+#-
+This file provides a basic Tasmota driver in berry-lang for the QMI8658 6-axis IMU.
+
+Note that it this is based on the much-more-complete 2022 version of the datasheet
+from the sample code ZIP file and not on the 2021 version from the board wiki.
+-#
+
 
 class QMI8658
   var wire # not nil if device detected
@@ -17,6 +23,15 @@ class QMI8658
 
   def read_reg(reg)
     return self.wire.read(self.addr, reg, 1)
+  end
+
+  def read_wide_reg(reg, len, isUnsigned)
+    var barr = self.wire.read_bytes(self.addr, reg, len)
+    if isUnsigned
+      return barr.get(0, len)
+    else
+      return barr.geti(0, len)
+    end
   end
 
   def write_reg(reg, byte)
@@ -77,22 +92,29 @@ class QMI8658
       var aEN = 1 << 0
       self.write_reg(self.REG_CTRL7, aEN)
 
-      tasmota.delay(1750) # Datasheet states post-reset requires 1.75s to recover
+      var uptime = tasmota.millis()
+      if uptime < 1750
+        tasmota.delay(1750 - uptime) # Datasheet states post-reset requires 1.75s to recover
+      else
+        tasmota.delay(3) # Wait for accelerometer to start up (longer if low-pass filter is enabled)
+      end
+
       print("QMI8658 found and initialized")
     end
   end
 
   def every_second()
     if self.wire == nil return end
-    var temp_bytes = self.wire.read_bytes(self.addr, self.REG_TEMP_L, 2)
-    var temp = real(temp_bytes.geti(0, 2)) / 256.0
+
+    var temp_int = self.read_wide_reg(self.REG_TEMP_L, 2, false)
+    var temp = real(temp_int) / 256.0
     print("Temp", temp, "C")
 
-    print("TIMESTAMP", self.read_reg(self.REG_TIMESTAMP_L))
+    print("TIMESTAMP", self.read_wide_reg(self.REG_TIMESTAMP_L, 3, true))
 
     print("STATUS0", self.read_reg(self.REG_STATUS0))
 
-    print("AX_L", self.read_reg(self.REG_AX_L))
+    print("AX_L", self.read_wide_reg(self.REG_AX_L, 2, false))
   end
 end
 dr = QMI8658()
