@@ -75,6 +75,7 @@ class QMI8658
       self.write_reg(self.REG_CTRL1, SPI_AI)
 
       # CTRL2
+      # Full scale +/-2g
       var aST = 1 << 7
       var aODR = 0xF << 0
       self.write_reg(self.REG_CTRL2, aODR)
@@ -98,15 +99,17 @@ class QMI8658
   def every_second()
     if self.wire == nil return end
 
-    var temp_int = self.read_wide_reg(self.REG_TEMP_L, 2, false)
-    var temp = real(temp_int) / 256.0
-    print("Temp", temp, "C")
-
+    print("Temp", real(self.read_wide_reg(self.REG_TEMP_L, 2, false)) / 256.0, "C")
     print("TIMESTAMP", self.read_wide_reg(self.REG_TIMESTAMP_L, 3, true))
-
     print("STATUS0", self.read_reg(self.REG_STATUS0))
-
-    print("AX_L", self.read_wide_reg(self.REG_AX_L, 2, false))
+    print("CTRL2", self.read_reg(self.REG_CTRL2))
+    # The datasheet says it's two's complement 5.11, so this should be 1/2048, but the example code in SensorLib uses 1/16384
+    # and that appears, empirically, to be correct. This corresponds with MAX_INT16 being +2g, which also fits the docs.
+    var accel_scale_factor = 2.0 / 32768.0
+    # Force in the direction of the arrows is negative
+    print("AX_L", real(self.read_wide_reg(self.REG_AX_L, 2, false)) * accel_scale_factor)
+    print("AY_L", real(self.read_wide_reg(self.REG_AY_L, 2, false)) * accel_scale_factor)
+    print("AZ_L", real(self.read_wide_reg(self.REG_AZ_L, 2, false)) * accel_scale_factor)
   end
 end
 dr = QMI8658()
