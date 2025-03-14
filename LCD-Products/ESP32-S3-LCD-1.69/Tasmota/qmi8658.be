@@ -5,7 +5,6 @@ Note that it this is based on the much-more-complete 2022 version of the datashe
 from the sample code ZIP file and not on the 2021 version from the board wiki.
 -#
 
-
 class QMI8658
   static var REG_WHO_AM_I = 0x00
   static var REG_REVISION_ID = 0x01
@@ -22,6 +21,8 @@ class QMI8658
 
   var wire # not nil if device detected
   var addr
+  var accel_scale_factor
+  var latest_datum
 
   def read_reg(reg)
     return self.wire.read(self.addr, reg, 1)
@@ -76,6 +77,9 @@ class QMI8658
 
       # CTRL2
       # Full scale +/-2g
+      # The datasheet says it's two's complement 5.11, so this should be 1/2048, but the example code in SensorLib uses 1/16384
+      # and that appears, empirically, to be correct. This corresponds with MAX_INT16 being +2g, which also fits the docs.
+      self.accel_scale_factor = 2.0 / 32768.0
       var aST = 1 << 7
       var aODR = 0xF << 0
       self.write_reg(self.REG_CTRL2, aODR)
@@ -96,21 +100,56 @@ class QMI8658
     end
   end
 
+  def read_accel()
+    # Remember, reading STATUS0 clears the interrupt.
+    if (self.read_reg(self.REG_STATUS0) & 0x1) == 0x1
+      var raw = self.wire.read_bytes(self.addr, self.REG_TIMESTAMP_L, 3+2+2+2+2) # timestamp, temp, acceleration xyz
+      var timestamp = raw.get(0, 3)
+      var temp = real(raw.geti(3, 2)) / 256.0
+      var x = raw.geti(5, 2) * self.accel_scale_factor
+      var y = raw.geti(7, 2) * self.accel_scale_factor
+      var z = raw.geti(9, 2) * self.accel_scale_factor
+      return {'timestamp':timestamp, 'temp_C': temp, 'x_g': x, 'y_g': y, 'z_g': z}
+    end
+    return nil
+  end
+
   def every_second()
     if self.wire == nil return end
 
-    print("Temp", real(self.read_wide_reg(self.REG_TEMP_L, 2, false)) / 256.0, "C")
-    print("TIMESTAMP", self.read_wide_reg(self.REG_TIMESTAMP_L, 3, true))
-    print("STATUS0", self.read_reg(self.REG_STATUS0))
     print("CTRL2", self.read_reg(self.REG_CTRL2))
-    # The datasheet says it's two's complement 5.11, so this should be 1/2048, but the example code in SensorLib uses 1/16384
-    # and that appears, empirically, to be correct. This corresponds with MAX_INT16 being +2g, which also fits the docs.
-    var accel_scale_factor = 2.0 / 32768.0
     # Force in the direction of the arrows is negative
-    print("AX_L", real(self.read_wide_reg(self.REG_AX_L, 2, false)) * accel_scale_factor)
-    print("AY_L", real(self.read_wide_reg(self.REG_AY_L, 2, false)) * accel_scale_factor)
-    print("AZ_L", real(self.read_wide_reg(self.REG_AZ_L, 2, false)) * accel_scale_factor)
+    var datum = self.read_accel()
+    if datum != nil
+      print("TIMESTAMP", datum["timestamp"])
+      print("Temp", datum["temp_C"], "C")
+      print("aX", datum["x_g"], "g")
+      print("aY", datum["y_g"], "g")
+      print("aZ", datum["z_g"], "g")
+      self.latest_datum = datum
+    end
+    return datum
+  end
+
+  def web_sensor()
+    if self.wire == nil return end
+    if self.latest_datum == nil return end
+    import string
+    import math
+    tasmota.web_send_decimal(string.format('accel #%d t=%0.2fC<br/>x=%0.4fg y=%0.4fg z=%0.4fg<br/>mag=%0.4fg',
+      self.latest_datum['timestamp'],
+      self.latest_datum['temp_C'],
+      self.latest_datum['x_g'],
+      self.latest_datum['y_g'],
+      self.latest_datum['z_g'],
+      math.sqrt(math.pow(self.latest_datum['x_g'], 2) + math.pow(self.latest_datum['y_g'], 2) + math.pow(self.latest_datum['z_g'], 2))
+    ))
   end
 end
-dr = QMI8658()
-tasmota.add_driver(dr)
+
+var qmi8658_driver_instance
+if qmi8658_driver_instance != nil
+  tasmota.remove_driver(qmi8658_driver_instance)
+end
+qmi8658_driver_instance = QMI8658()
+tasmota.add_driver(qmi8658_driver_instance)
