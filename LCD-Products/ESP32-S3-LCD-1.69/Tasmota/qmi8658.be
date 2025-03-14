@@ -7,19 +7,21 @@ from the sample code ZIP file and not on the 2021 version from the board wiki.
 
 
 class QMI8658
+  static var REG_WHO_AM_I = 0x00
+  static var REG_REVISION_ID = 0x01
+  static var REG_CTRL1 = 0x02
+  static var REG_CTRL2 = 0x03
+  static var REG_CTRL7 = 0x08
+  static var REG_STATUS0 = 0x2e
+  static var REG_TIMESTAMP_L = 0x30
+  static var REG_TEMP_L = 0x33
+  static var REG_AX_L = 0x35
+  static var REG_AY_L = 0x37
+  static var REG_AZ_L = 0x39
+  static var REG_RESET = 0x60
+
   var wire # not nil if device detected
-  # I have no idea why Tasmota Berry won't allow assignment here.
   var addr
-  var REG_WHO_AM_I
-  var REG_REVISION_ID
-  var REG_CTRL1
-  var REG_CTRL2
-  var REG_CTRL7
-  var REG_STATUS0
-  var REG_TIMESTAMP_L
-  var REG_TEMP_L
-  var REG_AX_L
-  var REG_RESET
 
   def read_reg(reg)
     return self.wire.read(self.addr, reg, 1)
@@ -48,16 +50,6 @@ class QMI8658
     # defines it as 0x6b:
     # Arduino-v3.0.5\libraries\SensorLib\src\REG\QMI8658Constants.h:33:#define QMI8658_L_SLAVE_ADDRESS                 (0x6B)
     self.addr = 0x6b
-    self.REG_WHO_AM_I = 0x00
-    self.REG_REVISION_ID = 0x01
-    self.REG_CTRL1 = 0x02
-    self.REG_CTRL2 = 0x03
-    self.REG_CTRL7 = 0x08
-    self.REG_STATUS0 = 0x2e
-    self.REG_TIMESTAMP_L = 0x30
-    self.REG_TEMP_L = 0x33
-    self.REG_AX_L = 0x35
-    self.REG_RESET = 0x60
     self.wire = tasmota.wire_scan(self.addr)
     if self.wire
       var v = self.read_reg(self.REG_WHO_AM_I)
