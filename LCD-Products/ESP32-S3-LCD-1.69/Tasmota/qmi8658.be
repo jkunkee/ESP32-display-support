@@ -5,7 +5,7 @@ Note that it this is based on the much-more-complete 2022 version of the datashe
 from the sample code ZIP file and not on the 2021 version from the board wiki.
 -#
 
-class QMI8658
+class QMI8658 : Driver
   static var REG_WHO_AM_I = 0x00
   static var REG_REVISION_ID = 0x01
   static var REG_CTRL1 = 0x02
@@ -47,15 +47,13 @@ class QMI8658
 
   def init()
     # The datasheet and board schematic seem to suggest this should be 0x6a, but the Waveshare SensorLib
-    # suggests that holding  is in the 0x6b configuration
-    # defines it as 0x6b:
-    # Arduino-v3.0.5\libraries\SensorLib\src\REG\QMI8658Constants.h:33:#define QMI8658_L_SLAVE_ADDRESS                 (0x6B)
+    # and I2C scans suggest that it is wired in the 0x6b configuration.
     self.addr = 0x6b
     self.wire = tasmota.wire_scan(self.addr)
     if self.wire
       var v = self.read_reg(self.REG_WHO_AM_I)
       if v != 0x05
-        print("WHO_AM_I returned", v)
+        print("QMI8658 WHO_AM_I unexpected result:", v)
         self.wire = nil
         return
       end
@@ -67,7 +65,7 @@ class QMI8658
       # two different values for it (0x68, 0x79) and testing has shown at least a third (0x7c).
       # Also, the data sheet does not suggest different revisions behave differently.
       v = self.read_reg(self.REG_REVISION_ID)
-      print("REVISION_ID", v)
+      print("QMI8658 REVISION_ID", v)
 
       # CTRL1
       # SPI_AI - I2C and SPI auto-increment of address (allows multi-address reads/writes)
@@ -81,20 +79,13 @@ class QMI8658
       # and that appears, empirically, to be correct. This corresponds with MAX_INT16 being +2g, which also fits the docs.
       self.accel_scale_factor = 2.0 / 32768.0
       var aST = 1 << 7
-      var aODR = 0xF << 0
+      var aODR = 0xE << 0 # 11Hz
       self.write_reg(self.REG_CTRL2, aODR)
 
       # CTRL7
       # aEN - enable accelerometer
       var aEN = 1 << 0
       self.write_reg(self.REG_CTRL7, aEN)
-
-      var uptime = tasmota.millis()
-      if uptime < 1750
-        tasmota.delay(1750 - uptime) # Datasheet states post-reset requires 1.75s to recover
-      else
-        tasmota.delay(3) # Wait for accelerometer to start up (longer if low-pass filter is enabled)
-      end
 
       print("QMI8658 found and initialized")
     end
@@ -110,46 +101,67 @@ class QMI8658
       var y = raw.geti(7, 2) * self.accel_scale_factor
       var z = raw.geti(9, 2) * self.accel_scale_factor
       return {'timestamp':timestamp, 'temp_C': temp, 'x_g': x, 'y_g': y, 'z_g': z}
+    else
+      return nil
     end
-    return nil
   end
 
-  def every_second()
-    if self.wire == nil return end
+  #- Driver interface -#
 
-    print("CTRL2", self.read_reg(self.REG_CTRL2))
-    # Force in the direction of the arrows is negative
-    var datum = self.read_accel()
-    if datum != nil
-      print("TIMESTAMP", datum["timestamp"])
-      print("Temp", datum["temp_C"], "C")
-      print("aX", datum["x_g"], "g")
-      print("aY", datum["y_g"], "g")
-      print("aZ", datum["z_g"], "g")
-      self.latest_datum = datum
-    end
-    return datum
-  end
-
-  def web_sensor()
+  def every_second(cmd, idx, payload, raw)
     if self.wire == nil return end
     if self.latest_datum == nil return end
+    # Force in the direction of the arrows is negative
+    var datum = self.latest_datum
+    print("qmi8658 seq", datum["timestamp"], "Temp", datum["temp_C"], "C", "aX", datum["x_g"], "g", "aY", datum["y_g"], "g", "aZ", datum["z_g"], "g")
+  end
+
+  def every_100ms(cmd, idx, payload, raw)
+    if self.wire == nil return end
+
+    var datum = self.read_accel()
+    if datum != nil
+      self.latest_datum = datum
+    end
+  end
+
+  def web_sensor(cmd, idx, payload, raw)
+    if self.wire == nil return end
+    if self.latest_datum == nil return end
+
     import string
     import math
-    tasmota.web_send_decimal(string.format('accel #%d t=%0.2fC<br/>x=%0.4fg y=%0.4fg z=%0.4fg<br/>mag=%0.4fg',
+    var magnitude = math.sqrt(math.pow(self.latest_datum['x_g'], 2) + math.pow(self.latest_datum['y_g'], 2) + math.pow(self.latest_datum['z_g'], 2))
+    tasmota.web_send_decimal(string.format('accel #%d t=%0.2fC<br/>x=%0.4fg y=%0.4fg z=%0.4fg<br/>mag = %0.4fg (%0.1fm/s)',
       self.latest_datum['timestamp'],
       self.latest_datum['temp_C'],
       self.latest_datum['x_g'],
       self.latest_datum['y_g'],
       self.latest_datum['z_g'],
-      math.sqrt(math.pow(self.latest_datum['x_g'], 2) + math.pow(self.latest_datum['y_g'], 2) + math.pow(self.latest_datum['z_g'], 2))
+      magnitude,
+      magnitude * 9.8
     ))
+  end
+
+  def json_append(cmd, idx, payload, raw)
+    if self.wire == nil return end
+    if self.latest_datum == nil return end
+
+    import string
+    import json
+    var datum_copy = json.load(json.dump(self.latest_datum))
+    datum_copy.remove('timestamp')
+    tasmota.response_append(string.format(', "qmi8658": %s', json.dump(datum_copy)))
   end
 end
 
-var qmi8658_driver_instance
-if qmi8658_driver_instance != nil
-  tasmota.remove_driver(qmi8658_driver_instance)
+# Gracefully handle re-running this script with changes
+import global
+if !global.contains('qmi8658_driver_instance')
+  global.qmi8658_driver_instance = nil
 end
-qmi8658_driver_instance = QMI8658()
-tasmota.add_driver(qmi8658_driver_instance)
+if global.qmi8658_driver_instance != nil
+  tasmota.remove_driver(global.qmi8658_driver_instance)
+end
+global.qmi8658_driver_instance = QMI8658()
+tasmota.add_driver(global.qmi8658_driver_instance)
