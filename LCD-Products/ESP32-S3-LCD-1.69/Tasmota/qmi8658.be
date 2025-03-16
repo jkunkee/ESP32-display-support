@@ -70,7 +70,6 @@ class QMI8658 : Driver
       # CTRL1
       # SPI_AI - I2C and SPI auto-increment of address (allows multi-address reads/writes)
       var SPI_AI = 1 << 6
-      var SPI_BE = 1 << 5
       self.write_reg(self.REG_CTRL1, SPI_AI)
 
       # CTRL2
