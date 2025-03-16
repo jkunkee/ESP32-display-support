@@ -162,9 +162,9 @@ In the on-device filesystem, save the following to `display.ini`:
 :A,2A,2B,2C
 :R,36
 :0,C0,00,14,00
-:1,A0,00,00,01
-:2,00,00,00,02
-:3,60,00,00,03
+:1,A0,14,00,01
+:2,00,00,14,02
+:3,60,14,00,03
 :i,21,20
 #
 ```
@@ -175,9 +175,7 @@ Notes:
 * Loading/reloading display.ini requires a reboot.
 * `21,80` in the `:I` section and `:i,21,20` should be, if the datasheet is to be trusted, reversed to `20,80` and `:i,20,21`. As it stands, though, `21` in practice disables inversion; it is possible this is due to an unrelated misconfiguration (perhaps in the LVGL pixel layout configuration). It matches what the sample code does during initialization. This can be experimented with using the `DisplayInvert <n>` Tasmota Command.
 
-TODO: The `14` on the `:0` line is probably needed for `1` through `3`, but testing that requires spelunking through the LVGL Berry API to figure out how to rotate the screen.
-
-TODO: Tailor the splashcreen (`:S`)
+TODO: The rotation offsets (`14` on the `:0` line) need to be confirmed for `:1` through `:3`. This can be tested with a good screen layout and the `DisplayRotate <n>` Tasmota Command.
 
 TODO: Toggle the backlight
 
