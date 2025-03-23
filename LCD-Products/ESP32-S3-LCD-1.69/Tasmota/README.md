@@ -144,30 +144,7 @@ Sample: `tasmota\displaydesc\ST7789_172x320_Waveshare_esp32c6_lcd_1_47.ini`
 
 The adjacent `ST7789_display.ini` sample includes touchscreen configuration, but this is not for the touch module.
 
-In the on-device filesystem, save the following to `display.ini`:
-
-```
-:H,ST7789,240,280,16,SPI,1,*,*,*,*,*,*,*,40
-:S,2,1,3,0,80,30
-:I
-01,A0
-11,A0
-3A,81,55
-36,81,00
-21,80
-13,80
-29,A0
-:o,28
-:O,29
-:A,2A,2B,2C
-:R,36
-:0,C0,00,14,00
-:1,A0,14,00,01
-:2,00,00,14,02
-:3,60,14,00,03
-:i,21,20
-#
-```
+Copy the contents of the accompanying `display.ini` to the device filesystem.
 
 Notes:
 
@@ -181,84 +158,13 @@ TODO: Toggle the backlight
 
 #### autoexec.be
 
-On every boot, Tasmota will run `autoexec.be` from the filesystem.
+On every boot, Tasmota will run `autoexec.be` from the filesystem. The one in this directory will load the IMU driver and start HASPmota.
 
-This `autoexec.be` will load the IMU driver and draw some basic widgets on the screen.
+TODO: figure out what is at I2C 0x7E
 
-TODO: display IMU state
+#### pages.jsonl
 
-TODO: tie IMU accelerometer to screen orientation
-
-TODO: figure out is at I2C 0x7E
-
-```berry
-load("qmi8658")
-
-#- start LVGL and init environment -#
-lv.start()
-
-hres = lv.get_hor_res()       # should be 320
-vres = lv.get_ver_res()       # should be 240
-
-scr = lv.scr_act()            # default screen object
-f20 = lv.montserrat_font(20)  # load embedded Montserrat 20
-
-#- Background with a gradient from black #000000 (bottom) to dark blue #0000A0 (top) -#
-scr.set_style_bg_color(lv.color(0x0000A0), lv.PART_MAIN | lv.STATE_DEFAULT)
-scr.set_style_bg_grad_color(lv.color(0x000000), lv.PART_MAIN | lv.STATE_DEFAULT)
-scr.set_style_bg_grad_dir(lv.GRAD_DIR_VER, lv.PART_MAIN | lv.STATE_DEFAULT)
-
-#- Upper state line -#
-stat_line = lv.label(scr)
-if f20 != nil stat_line.set_style_text_font(f20, lv.PART_MAIN | lv.STATE_DEFAULT) end
-stat_line.set_long_mode(lv.LABEL_LONG_SCROLL)                                        # auto scrolling if text does not fit
-stat_line.set_width(hres)
-stat_line.set_align(lv.TEXT_ALIGN_LEFT)                                              # align text left
-stat_line.set_style_bg_color(lv.color(0xD00000), lv.PART_MAIN | lv.STATE_DEFAULT)    # background #000088
-stat_line.set_style_bg_opa(lv.OPA_COVER, lv.PART_MAIN | lv.STATE_DEFAULT)            # 100% background opacity
-stat_line.set_style_text_color(lv.color(0xFFFFFF), lv.PART_MAIN | lv.STATE_DEFAULT)  # text color #FFFFFF
-stat_line.set_text("Tasmota")
-stat_line.refr_size()                                                                # new in LVGL8
-stat_line.refr_pos()                                                                 # new in LVGL8
-
-#- display wifi strength indicator icon (for professionals ;) -#
-wifi_icon = lv_wifi_arcs_icon(stat_line)    # the widget takes care of positioning and driver stuff
-clock_icon = lv_clock_icon(stat_line)
-
-#- create a style for the buttons -#
-btn_style = lv.style()
-btn_style.set_radius(10)                        # radius of rounded corners
-btn_style.set_bg_opa(lv.OPA_COVER)              # 100% background opacity
-if f20 != nil btn_style.set_text_font(f20) end  # set font to Montserrat 20
-btn_style.set_bg_color(lv.color(0x1fa3ec))      # background color #1FA3EC (Tasmota Blue)
-btn_style.set_border_color(lv.color(0x0000FF))  # border color #0000FF
-btn_style.set_text_color(lv.color(0xFFFFFF))    # text color white #FFFFFF
-
-#- create buttons -#
-prev_btn = lv.btn(scr)                            # create button with main screen as parent
-prev_btn.set_pos(20,vres-40)                      # position of button
-prev_btn.set_size(40, 35)                         # size of button
-prev_btn.add_style(btn_style, lv.PART_MAIN | lv.STATE_DEFAULT)   # style of button
-prev_label = lv.label(prev_btn)                   # create a label as sub-object
-prev_label.set_text("<")                          # set label text
-prev_label.center()
-
-next_btn = lv.btn(scr)                            # right button
-next_btn.set_pos(180,vres-40)
-next_btn.set_size(40, 35)
-next_btn.add_style(btn_style, lv.PART_MAIN | lv.STATE_DEFAULT)
-next_label = lv.label(next_btn)
-next_label.set_text(">")
-next_label.center()
-
-home_btn = lv.btn(scr)                            # center button
-home_btn.set_pos(80,vres-40)
-home_btn.set_size(80, 35)
-home_btn.add_style(btn_style, lv.PART_MAIN | lv.STATE_DEFAULT)
-home_label = lv.label(home_btn)
-home_label.set_text(lv.SYMBOL_OK)                 # set text as Home icon
-home_label.center()
-```
+HASPmota is a JSON-based way to easily and concisely describe LVGL GUIs. The `pages.jsonl` file in this folder, when placed in the root of the filesystem and together with `haspmota.start()` in `autoexec.be`, will draw a simple UI and graph the X and Y values coming out of the IMU.
 
 # TODO
 

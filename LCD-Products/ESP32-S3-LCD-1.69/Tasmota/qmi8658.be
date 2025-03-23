@@ -112,7 +112,7 @@ class QMI8658 : Driver
     if self.latest_datum == nil return end
     # Force in the direction of the arrows is negative
     var datum = self.latest_datum
-    print("qmi8658 seq", datum["timestamp"], "Temp", datum["temp_C"], "C", "aX", datum["x_g"], "g", "aY", datum["y_g"], "g", "aZ", datum["z_g"], "g")
+    #print("qmi8658 seq", datum["timestamp"], "Temp", datum["temp_C"], "C", "aX", datum["x_g"], "g", "aY", datum["y_g"], "g", "aZ", datum["z_g"], "g")
   end
 
   def every_100ms(cmd, idx, payload, raw)
