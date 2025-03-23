@@ -131,14 +131,14 @@ class QMI8658 : Driver
     import string
     import math
     var magnitude = math.sqrt(math.pow(self.latest_datum['x_g'], 2) + math.pow(self.latest_datum['y_g'], 2) + math.pow(self.latest_datum['z_g'], 2))
-    tasmota.web_send_decimal(string.format('accel #%d t=%0.2fC<br/>x=%0.4fg y=%0.4fg z=%0.4fg<br/>mag = %0.4fg (%0.1fm/s)',
+    tasmota.web_send_decimal(string.format('accel #%d t=%0.2fC<br/>x=%0.4fg y=%0.4fg z=%0.4fg<br/>mag = %0.4fg (%0.1fm/s^2)',
       self.latest_datum['timestamp'],
       self.latest_datum['temp_C'],
       self.latest_datum['x_g'],
       self.latest_datum['y_g'],
       self.latest_datum['z_g'],
       magnitude,
-      magnitude * 9.8
+      magnitude * 9.80665 # g0, standard gravity
     ))
   end
 
