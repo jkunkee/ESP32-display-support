@@ -60,7 +60,6 @@ This is where the magic happens. Copy the sample per the Tasmota docs, then add 
 #define USE_RTC_CHIPS                          // Enable RTC chip support and NTP server - Select only one
 #define USE_PCF85063                         // [I2cDriver92] Enable PCF85063 RTC support (I2C address 0x51)
 // QMI8658 6-axis IMU
-// --> TODO No Tasmota driver exists, so I'm writing one in Berry.
 // Buzzer (GPIO-transistor-voicecoil arrangement)
 // --> Further configuration is detailed later in this document.
 #ifndef USE_BUZZER
