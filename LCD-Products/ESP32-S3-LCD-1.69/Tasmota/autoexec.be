@@ -12,4 +12,15 @@ tasmota.add_rule(["QMI8658#x_g","QMI8658#y_g"], on_accel)
 
 tasmota.add_rule("BUTTON1#State", def() import haspmota haspmota.page_show('next') end)
 
+if wire1.enabled()
+    global.p2b1.text = "wire1: " + wire1.scan().tostring()
+else
+    global.p2b1.text = "wire1: not initialized"
+end
+if wire2.enabled()
+    global.p2b2.text = "wire2: " + wire2.scan().tostring()
+else
+    global.p2b2.text = "wire2: not initialized"
+end
+
 tasmota.add_rule("System#Boot", def() tasmota.cmd("backlog buzzer 2,3") end)

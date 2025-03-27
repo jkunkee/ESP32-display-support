@@ -17,3 +17,8 @@
 {"id":1,"obj":"label","x":10,"y":30,"w%":100,"h":24,"text":"Accelerometer X/Y","text_font":"montserrat-20"}
 {"id":10,"obj":"chart","x":10,"y":60,"w":220,"h":130,"bg_color":"#440000","border_color":"#FFFF44","bg_opa":100,"border_color":"#0099EE","border_width":1,"radius":10,"pad_all":2,"y_min":-200,"y_max":200,"point_count":20,"height10":0,"width10":0,"v_div_line_count":0,"h_div_line_count":5,"line_color":"#555555","line_width30":3}
 {"id":11,"obj":"label","x":20,"y":190,"w":130,"text":"z=","align":0,"text_rule":"QMI8658#z_g","text_rule_format":"z=%2.3fg","text_rule_formula":"val"}
+
+{"page":2,"comment":"---------- Page 2 Stats ----------"}
+{"id":0,"bg_color":"#000000","text_color":"#FFFFFF","text_font":"montserrat-20"}
+{"id":1,"obj":"label","x":10,"y":30,"w%":100,"h":24,"text":"wire1 status","text_font":"montserrat-20"}
+{"id":2,"obj":"label","x":10,"y":54,"w%":100,"h":24,"text":"wire2 status","text_font":"montserrat-20"}
