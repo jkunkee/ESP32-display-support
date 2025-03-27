@@ -22,3 +22,5 @@
 {"id":0,"bg_color":"#000000","text_color":"#FFFFFF","text_font":"montserrat-20"}
 {"id":1,"obj":"label","x":10,"y":30,"w%":100,"h":24,"text":"wire1 status","text_font":"montserrat-20"}
 {"id":2,"obj":"label","x":10,"y":54,"w%":100,"h":24,"text":"wire2 status","text_font":"montserrat-20"}
+{"comment":"BAT_ADC is 1/3 of B+, which is the raw battery voltage. The ETA6098 datasheet is unclear about the no-battery state, but it appears to be 4.2V. Tasmota does not appear to accept adcparam commands but says 3.3V is the default max input range."}
+{"id":3,"obj":"label","x":10,"y":78,"w%":100,"h":24,"text":"BAT_ADC","text_rule":"ANALOG#A1","text_rule_format":"BAT_ADC=%2.3fV","text_rule_formula":"3*(val*3.3/4095)","text_font":"montserrat-20"}

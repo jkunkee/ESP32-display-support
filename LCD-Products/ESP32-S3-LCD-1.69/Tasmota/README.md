@@ -105,7 +105,7 @@ Navigate in the web UI to Main Menu -> Configuration -> Module.
 **Reminder: this is currently for V1 hardware.**
 
 * GPIO0 - Button - 1 (this is the middle button on the side of the board)
-* GPIO1 - ADC Voltage (TODO: this seems to cause crashes)
+* GPIO1 - ADC Input
 * GPIO2 - Option A - 3 (this can be any unused pin; toggling it runs the on/off commands for the screen)
 * GPIO4 - SPI DC - 1
 * GPIO5 - SPI CS - 1
