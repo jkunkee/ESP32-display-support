@@ -117,16 +117,17 @@ Navigate in the web UI to Main Menu -> Configuration -> Module.
 * GPIO15 - Backlight
 * GPIO33 - Buzzer
     * This can be validated with the Tasmota Command `Buzzer 2,3`
+* GPIO38 - None - Current simple Berry QMI8658 driver does not use the interrupt
+* GPIO41 - None - Tasmota's PCF85063 driver does not offer a GPIO mapping for the interrupt
+* GPIO43 - Serial Tx
+* GPIO44 - Serial Rx
 
 N.B. The V1 schematic labels the display SPI clock and data pins with I2C names. This is clarified in the LVGL sample from the Waveshare wiki for the board.
 
 TODO:
 
-* GPIO38 is the IMU interrupt
 * GPIO35 is SYS_EN, but I don't understand the circuit yet
 * GPIO36 is SYS_OUT, but I don't understand the circuit yet
-* GPIO41 is the RTC interrupt
-* GPIO43/44 are a UART TX/RX pair (U0TXD/U0RXD)
 * Several other GPIOs are mapped to the breakout header
 
 ### Files
