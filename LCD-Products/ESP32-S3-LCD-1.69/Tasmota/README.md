@@ -160,7 +160,7 @@ TODO: Toggle the backlight
 
 On every boot, Tasmota will run `autoexec.be` from the filesystem. The one in this directory will load the IMU driver and start HASPmota.
 
-TODO: figure out what is at I2C 0x7E
+N.B. The Tasmota device scan is not aware of the Device ID portion of the I2C spec, so it will report a spurious device present at address 0x7E (in the Device ID range of 0b11111xx or 0x7C-0x7F).
 
 #### pages.jsonl
 
