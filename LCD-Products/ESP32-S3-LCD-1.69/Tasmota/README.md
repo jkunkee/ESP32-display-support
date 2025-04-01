@@ -106,7 +106,6 @@ Navigate in the web UI to Main Menu -> Configuration -> Module.
 
 * GPIO0 - Button - 1 (this is the middle button on the side of the board)
 * GPIO1 - ADC Input
-* GPIO2 - Option A - 3 (this can be any unused pin; toggling it runs the on/off commands for the screen)
 * GPIO4 - SPI DC - 1
 * GPIO5 - SPI CS - 1
 * GPIO6 - SPI CLK - 1
@@ -114,6 +113,7 @@ Navigate in the web UI to Main Menu -> Configuration -> Module.
 * GPIO8 - Display Rst
 * GPIO10 - I2C SCL - 1
 * GPIO11 - I2C SDA - 1
+* GPIO12 - Option A - 3 (this can be any unused pin; toggling it runs the on/off commands for the screen)
 * GPIO15 - Backlight
 * GPIO33 - Buzzer
     * This can be validated with the Tasmota Command `Buzzer 2,3`
