@@ -114,7 +114,7 @@ Navigate in the web UI to Main Menu -> Configuration -> Module.
 * GPIO10 - I2C SCL - 1
 * GPIO11 - I2C SDA - 1
 * GPIO12 - Option A - 3 (this can be any unused pin; it only configures the display)
-* GPIO15 - Backlight
+* GPIO15 - Output Hi
 * GPIO33 - Buzzer
     * This can be validated with the Tasmota Command `Buzzer 2,3`
 * GPIO38 - None - Current simple Berry QMI8658 driver does not use the interrupt
@@ -126,6 +126,12 @@ Notes:
 
 * The V1 schematic labels the display SPI clock and data pins with I2C names. This is clarified in the LVGL sample from the Waveshare wiki for the board.
 * The Tasmota `SetOption73` default value of `0` ties `Button<N>` to `Power<N>`. Since LVGL publishes a toggle for the screen's power, GPIO0 defaults to controlling screen power. This can be disabled with Tasmota Command `SetOption73 1`.
+* At least on one board, GPIO15 does not drive to a low enough voltage to turn off Q1. Configuring it as Output Hi reduces waste heat in Q1 and increases backlight brightness slightly.
+    * Specifically, GPIO15 feeds `0.1*VDD` to `0.8*VDD` into the 1K/10K network on the base of Q1. The high value is enough to saturate it, but the low value, 0.33V, plus the R16 voltage delta assuming Q1 is off, 0.27V, puts the base at 0.6V--which is right at the 8050 V_BE saturation voltage per at least BL Galaxy Electrical's graphs. Empirically this appears to be at the saturation end of the linear region.
+    * Configuring GPIO15 as Backlight and then toggling the backlight appears to trigger PSRAM usage even when the `qio` board setting is used.
+    * Waveshare's support suggests using PWM on GPIO15, but since the lowest voltage does not reach the cutoff region this doesn't appear to be useful.
+    * Waveshare's support also suggested replacing R11 with a 100K resistor. This can be a challenge for someone without fine SMD rework equipment, but removing R11 entirely might work.
+    * The schematic suggests that this is an issue with V2 hardware as well.
 
 TODO:
 
@@ -156,8 +162,6 @@ Notes:
 * `21,80` in the `:I` section and `:i,21,20` should be, if the datasheet is to be trusted, reversed to `20,80` and `:i,20,21`. As it stands, though, `21` in practice disables inversion; it is possible this is due to an unrelated misconfiguration (perhaps in the LVGL pixel layout configuration). It matches what the sample code does during initialization. This can be experimented with using the `DisplayInvert <n>` Tasmota Command.
 
 TODO: The rotation offsets (`14` on the `:0` line) need to be confirmed for `:1` through `:3`. This can be tested with a good screen layout and the `DisplayRotate <n>` Tasmota Command.
-
-TODO: Toggle the backlight
 
 #### autoexec.be
 
