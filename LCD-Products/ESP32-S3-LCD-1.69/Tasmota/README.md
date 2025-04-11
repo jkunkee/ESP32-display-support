@@ -135,6 +135,7 @@ Notes:
     * Waveshare's support also suggested replacing R11 with a 100K resistor. This can be a challenge for someone without fine SMD rework equipment, but removing R11 entirely might work.
     * The schematic suggests that this is an issue with V2 hardware as well.
 * GPIO35, SYS_EN, and Key2 both enable the battery's output, B+, to flow to the 3.3V regulator.
+    * This is described in the wiki under `09_LVGL_Keys_Bee`. In effect, Key2 can function as a power on initiator if the SoC then brings GPIO35 high to keep the power on. At that point the button can be used normally via GPIO36, for example by reacting to a double-press by lowering GPIO36 and cutting power to the system.
     * Q4 acts as a backflow prevention valve. The body diode will always let B+ via VBAT through to the 3.3V regulator input. If VBUS is present then D4 forces Q4 V_GS positive and thus Q4 into cutoff, so VBUS will not charge the battery. (That's what U9 is for.) If VBUS is absent, then D4 means Q4 V_GS is negative enough to put Q4 into saturation and VBAT can flow to the regulator without diode losses.
     * Q5 acts as a battery enable. When a battery is connected, pressing Key2 or setting SYS_EN high allows the battery to flow to the 3.3V regulator's input, whether through the Q4 body diode or source-drain conductance.
 * GPIO36, SYS_OUT, reads the state of Key2.
