@@ -106,23 +106,28 @@ Navigate in the web UI to Main Menu -> Configuration -> Module.
 
 * GPIO0 - Button - 1 (this is the middle button on the side of the board)
 * GPIO1 - ADC Input
+* GPIO2 - None (12-pin header)
+* GPIO3 - None (12-pin header)
 * GPIO4 - SPI DC - 1
 * GPIO5 - SPI CS - 1
 * GPIO6 - SPI CLK - 1
 * GPIO7 - SPI MOSI - 1
 * GPIO8 - Display Rst
-* GPIO10 - I2C SCL - 1
-* GPIO11 - I2C SDA - 1
+* GPIO10 - I2C SCL - 1 (incl. 12-pin header)
+* GPIO11 - I2C SDA - 1 (incl. 12-pin header)
 * GPIO12 - Option A - 3 (this can be any unused pin; it only configures the display)
 * GPIO15 - Output Hi
+* GPIO16 - None (12-pin header)
+* GPIO17 - None (12-pin header)
+* GPIO18 - None (12-pin header)
 * GPIO33 - Buzzer
     * This can be validated with the Tasmota Command `Buzzer 2,3`
 * GPIO35 - Switch - 1 (this enables the battery to power the system, as does Key2)
 * GPIO36 - Button - 2 (this is Key2, the top button on the side of the board)
 * GPIO38 - None - Current simple Berry QMI8658 driver does not use the interrupt
 * GPIO41 - None - Tasmota's PCF85063 driver does not offer a GPIO mapping for the interrupt
-* GPIO43 - Serial Tx
-* GPIO44 - Serial Rx
+* GPIO43 - Serial Tx (12-pin header)
+* GPIO44 - Serial Rx (12-pin header)
 
 Notes:
 
